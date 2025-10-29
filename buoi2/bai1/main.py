@@ -7,7 +7,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, classificat
 from dataset import collate_fn, MnistDataset
 from lenet import LeNetModel
 
-device = "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def evaluate(dataloader, model):

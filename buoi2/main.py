@@ -75,7 +75,7 @@ def main(model_name):
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
     # ---- 4. Train loop ----
-    EPOCHS = 3
+    EPOCHS = 5
     for epoch in range(EPOCHS):
         print(f"\n===== Epoch {epoch + 1}/{EPOCHS} =====")
         model.train()

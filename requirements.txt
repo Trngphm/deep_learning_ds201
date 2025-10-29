@@ -1,7 +1,0 @@
-torch
-torchvision
-scikit-learn
-tqdm
-opencv-python
-numpy
-idx2numpy
