@@ -10,3 +10,5 @@ __pycache__/
 *.npy
 *.npz
 **VinaFood21/
+*assignments.ipynb
+*demo.py
