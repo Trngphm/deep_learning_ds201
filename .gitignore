@@ -1,0 +1,12 @@
+**data/
+*.csv
+*.tsv
+*.json
+*.zip
+*.parquet
+__pycache__/
+*.pyc
+*.pkl
+*.npy
+*.npz
+**VinaFood21/
