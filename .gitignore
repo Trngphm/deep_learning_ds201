@@ -12,3 +12,4 @@ __pycache__/
 **VinaFood21/
 *assignments.ipynb
 *demo.py
+*.pth
