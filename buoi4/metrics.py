@@ -4,14 +4,9 @@ from nltk.translate.meteor_score import meteor_score
 from rouge_score import rouge_scorer
 
 def compute_metrics(preds, refs):
-    """
-    preds: list[str]
-    refs:  list[str]
-    return: dict BLEU1-4, ROUGE-L, METEOR
-    """
     assert len(preds) == len(refs)
 
-    bleu1_list, bleu2_list, bleu3_list, bleu4_list = [], [], [], [], []
+    bleu1_list, bleu2_list, bleu3_list, bleu4_list = [], [], [], []
     meteor_list = []
     rouge_l_list = []
 
@@ -23,16 +18,18 @@ def compute_metrics(preds, refs):
         # Tokenize
         hyp = pred.split()
         ref_tokens = ref.split()
-        refs_tok = [ref_tokens]  
+        refs_tok = [ref_tokens]
 
         # ==== BLEU ====
-        bleu1_list.append(sentence_bleu(refs_tok, hyp, weights=(1, 0, 0, 0), smoothing_function=smoother))
-        bleu2_list.append(sentence_bleu(refs_tok, hyp, weights=(0.5, 0.5, 0, 0), smoothing_function=smoother))
-        bleu3_list.append(sentence_bleu(refs_tok, hyp, weights=(1/3, 1/3, 1/3, 0), smoothing_function=smoother))
-        bleu4_list.append(sentence_bleu(refs_tok, hyp, weights=(0.25, 0.25, 0.25, 0.25), smoothing_function=smoother))
+        bleu1_list.append(sentence_bleu(refs_tok, hyp, weights=(1,0,0,0), smoothing_function=smoother))
+        bleu2_list.append(sentence_bleu(refs_tok, hyp, weights=(0.5,0.5,0,0), smoothing_function=smoother))
+        bleu3_list.append(sentence_bleu(refs_tok, hyp, weights=(1/3,1/3,1/3,0), smoothing_function=smoother))
+        bleu4_list.append(sentence_bleu(refs_tok, hyp, weights=(0.25,0.25,0.25,0.25), smoothing_function=smoother))
 
-        # ==== METEOR ====
-        meteor_list.append(meteor_score([ref], pred))
+        # ==== METEOR (đã sửa) ====
+        meteor_list.append(
+            meteor_score([ref_tokens], hyp)
+        )
 
         # ==== ROUGE-L ====
         rouge_scores = scorer.score(ref, pred)

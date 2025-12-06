@@ -56,7 +56,7 @@ class LSTM(nn.Module):
         
         self.vocab = vocab
         
-        self.MAX_LEN = vocab.max_sentence_length + 2  # +2 for <sos> and <eos>
+        self.MAX_LEN = vocab.max_sentence_length + 2  # +2 for <bos> and <eos>
         
         self.loss_fn = nn.CrossEntropyLoss(ignore_index=vocab.pad_idx)
 
@@ -74,7 +74,7 @@ class LSTM(nn.Module):
         # ---- ENCODER ----
         encoder_outputs, (h, c) = self.encoder(src)
 
-        # Decoder input đầu tiên = <sos>
+        # Decoder input đầu tiên = <bos>
         input_token = tgt[:, 0]    # [batch]
 
         logits = torch.zeros(batch_size, tgt_len, vocab_size, device=self.device)
@@ -103,8 +103,7 @@ class LSTM(nn.Module):
         batch_size = src.size(0)
         encoder_outputs, (h, c) = self.encoder(src)
 
-        input_token = torch.tensor([self.vocab.sos_idx] * batch_size,
-                                   device=self.device)
+        input_token = torch.tensor([self.vocab.bos_idx] * batch_size, device=self.device)
 
         hidden = (h, c)
 
@@ -124,7 +123,7 @@ class LSTM(nn.Module):
         # convert to tokens
         decoded = []
         for seq in outputs:
-            tokens = [self.vocab.idx2word[i] for i in seq]
+            tokens = [self.vocab.tgt_itos[i] for i in seq]
             decoded.append(tokens)
 
         return decoded

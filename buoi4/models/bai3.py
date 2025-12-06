@@ -133,7 +133,7 @@ class LSTMLuong(nn.Module):
         encoder_outputs, hidden = self.encoder(src)
 
         batch = src.size(0)
-        input_token = torch.tensor([self.vocab.sos_idx] * batch, device=self.device)
+        input_token = torch.tensor([self.vocab.bos_idx] * batch, device=self.device)
 
         outputs = [[] for _ in range(batch)]
 
@@ -150,6 +150,6 @@ class LSTMLuong(nn.Module):
 
         decoded = []
         for seq in outputs:
-            decoded.append([self.vocab.idx2word[i] for i in seq])
+            decoded.append([self.vocab.tgt_itos[i] for i in seq])
 
         return decoded

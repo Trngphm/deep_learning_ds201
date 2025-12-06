@@ -13,3 +13,4 @@ __pycache__/
 *assignments.ipynb
 *demo.py
 *.pth
+**data/

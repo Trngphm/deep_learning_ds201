@@ -248,7 +248,7 @@ class LSTMAttn(nn.Module):
         enc_outputs, (h_n, c_n) = self.encoder(src)
         dec_h, dec_c = self._init_decoder_state_from_encoder(h_n, c_n)
 
-        input_token = torch.tensor([self.vocab.sos_idx] * batch, device=self.device)
+        input_token = torch.tensor([self.vocab.bos_idx] * batch, device=self.device)
         outputs = [[] for _ in range(batch)]
 
         for _ in range(self.MAX_LEN):
@@ -265,5 +265,5 @@ class LSTMAttn(nn.Module):
         # convert idx -> words
         decoded = []
         for seq in outputs:
-            decoded.append([self.vocab.idx2word[idx] for idx in seq])
+            decoded.append([self.vocab.tgt_itos[idx] for idx in seq])
         return decoded

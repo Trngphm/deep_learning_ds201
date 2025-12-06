@@ -24,10 +24,12 @@ def evaluate(model, loader, vocab):
 
     all_preds = []
     all_refs = []
+    
+    progress_bar = tqdm(loader, desc="Evaluating")
 
-    for batch in loader:
-        src = batch["src"].to(device)
-        tgt = batch["tgt"].to(device)
+    for batch in progress_bar:
+        src = batch["vietnamese"].to(device)
+        tgt = batch["english"].to(device)
 
         # model.predict → list[list[str]]
         preds = model.predict(src)
@@ -36,12 +38,13 @@ def evaluate(model, loader, vocab):
         batch_refs = []
         for sent in tgt:
             seq = []
-            for idx in sent[1:]:  # bỏ <sos>
+            for idx in sent[1:]:  # bỏ <bos>
                 idx = idx.item()
                 if idx in (vocab.pad_idx, vocab.eos_idx):
                     break
-                seq.append(vocab.idx2word[idx])
-            batch_refs.append([" ".join(seq)])   # dạng string
+                seq.append(vocab.tgt_itos[idx])
+            batch_refs.append(" ".join(seq))
+
 
         # preds là list[list[token]] → convert sang string
         preds = [" ".join(p) for p in preds]
@@ -163,11 +166,15 @@ def main():
         print(f"Epoch {epoch+1} - Avg Loss: {np.mean(losses):.4f}")
 
         # ---- evaluate dev ----
-        bleu, rouge, meteor = evaluate(model, dev_loader, vocab)
+        metrics = evaluate(model, dev_loader, vocab)
 
-        print(f"[Dev] BLEU1: {bleu['bleu1']:.4f} | BLEU2: {bleu['bleu2']:.4f} | "
-              f"BLEU3: {bleu['bleu3']:.4f} | BLEU4: {bleu['bleu4']:.4f}")
-        print(f"[Dev] ROUGE-L: {rouge:.4f} | METEOR: {meteor:.4f}")
+        print(f"[Dev] BLEU1:  {metrics['BLEU@1']:.4f}")
+        print(f"[Dev] BLEU2:  {metrics['BLEU@2']:.4f}")
+        print(f"[Dev] BLEU3:  {metrics['BLEU@3']:.4f}")
+        print(f"[Dev] BLEU4:  {metrics['BLEU@4']:.4f}")
+        print(f"[Dev] ROUGE-L:{metrics['ROUGE-L']:.4f}")
+        print(f"[Dev] METEOR: {metrics['METEOR']:.4f}")
+        
 
     # ========== SAVE MODEL ==========
     save_path = f"{args.model}_phomt_model.pth"
