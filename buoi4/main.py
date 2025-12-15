@@ -168,12 +168,7 @@ def main():
         # ---- evaluate dev ----
         metrics = evaluate(model, dev_loader, vocab)
 
-        print(f"[Dev] BLEU1:  {metrics['BLEU@1']:.4f}")
-        print(f"[Dev] BLEU2:  {metrics['BLEU@2']:.4f}")
-        print(f"[Dev] BLEU3:  {metrics['BLEU@3']:.4f}")
-        print(f"[Dev] BLEU4:  {metrics['BLEU@4']:.4f}")
         print(f"[Dev] ROUGE-L:{metrics['ROUGE-L']:.4f}")
-        print(f"[Dev] METEOR: {metrics['METEOR']:.4f}")
         
 
     # ========== SAVE MODEL ==========
@@ -185,12 +180,7 @@ def main():
     print("\n========== TEST SET REPORT ==========")
     metrics = evaluate(model, dev_loader, vocab)
 
-    print(f"[Dev] BLEU1:  {metrics['BLEU@1']:.4f}")
-    print(f"[Dev] BLEU2:  {metrics['BLEU@2']:.4f}")
-    print(f"[Dev] BLEU3:  {metrics['BLEU@3']:.4f}")
-    print(f"[Dev] BLEU4:  {metrics['BLEU@4']:.4f}")
     print(f"[Dev] ROUGE-L:{metrics['ROUGE-L']:.4f}")
-    print(f"[Dev] METEOR: {metrics['METEOR']:.4f}")
 
 
 
