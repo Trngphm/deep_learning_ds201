@@ -100,14 +100,14 @@ def main():
     elif args.model == "lstm_attn":
         Config = ConfigLSTM
 
-        encoder = EncoderLuong(
+        encoder = EncoderWithAttention(
             input_size=vocab.total_src_tokens,
             embed_size=Config.embed_size,
             hidden_size=Config.hidden_size,
             num_layers=5,
             dropout=0.2
         )
-        decoder = DecoderLuong(
+        decoder = DecoderWithAttention(
             output_size=vocab.total_tgt_tokens,
             embed_size=Config.embed_size,
             hidden_size=Config.hidden_size,
@@ -115,7 +115,7 @@ def main():
             num_layers=5,
             dropout=0.2
         )
-        model = LSTMLuong(encoder, decoder, vocab, device).to(device)
+        model = LSTMAttn(encoder, decoder, vocab, device).to(device)
 
     elif args.model == "lstm_luong":
         Config = ConfigLSTM
