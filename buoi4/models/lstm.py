@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from vocabs.vocab import Vocab
 
 
+
 class Encoder(nn.Module):
     def __init__(self, input_size, embed_size, hidden_size, num_layers=5, dropout=0.2):
         super(Encoder, self).__init__()
