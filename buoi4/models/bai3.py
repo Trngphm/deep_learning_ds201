@@ -54,9 +54,9 @@ class DecoderLuong(nn.Module):
         super().__init__()
         self.embedding = nn.Embedding(output_size, embed_size)
         
-        # FIXED: Input is just embed_size (not concatenated with context)
+        # Input is just embed_size (not concatenated with context)
         self.lstm = nn.LSTM(
-            embed_size,  # Paper: attention is computed AFTER LSTM
+            embed_size, 
             hidden_size,
             num_layers=num_layers,
             dropout=dropout,
@@ -65,12 +65,11 @@ class DecoderLuong(nn.Module):
         
         self.attn = LuongAttention(hidden_size)
         
-        # FIXED: Concatenate h_t and c_t before projection (Equation 5 in paper)
+        # Concatenate h_t and c_t before projection (Equation 5 in paper)
         self.fc = nn.Linear(hidden_size * 2, output_size)
 
     def forward(self, token, hidden, encoder_outputs):
         """
-        Paper Algorithm:
         1. Run LSTM with embedding to get h_t
         2. Compute attention using h_t and encoder_outputs to get c_t
         3. Concatenate [h_t; c_t] to get h_tilde
@@ -83,10 +82,10 @@ class DecoderLuong(nn.Module):
         # Step 1: Embed token
         embedded = self.embedding(token).unsqueeze(1)  # (batch, 1, embed)
 
-        # Step 2: Run LSTM with just the embedding (Paper: Section 3.1)
+        # Step 2: Run LSTM with just the embedding 
         output, hidden = self.lstm(embedded, hidden)  # output: (batch, 1, hidden)
         
-        # Step 3: Compute attention AFTER LSTM using h_t (Paper: Equation 6)
+        # Step 3: Compute attention AFTER LSTM using h_t 
         dec_hidden_top = hidden[0][-1]  # top layer h_t, shape [batch, hidden]
         context, attn_weights = self.attn(dec_hidden_top, encoder_outputs)
         # context c_t: (batch, 1, hidden)
@@ -95,10 +94,10 @@ class DecoderLuong(nn.Module):
         output = output.squeeze(1)      # h_t: (batch, hidden)
         context = context.squeeze(1)    # c_t: (batch, hidden)
 
-        # Step 5: Concatenate h_t and c_t to form h_tilde (Paper: Equation 5)
+        # Step 5: Concatenate h_t and c_t to form h_tilde 
         h_tilde = torch.cat([output, context], dim=1)  # (batch, hidden*2)
         
-        # Step 6: Project to vocabulary (Paper: Equation 6)
+        # Step 6: Project to vocabulary 
         logits = self.fc(h_tilde)  # (batch, vocab)
 
         return logits, hidden, attn_weights
@@ -122,7 +121,7 @@ class LSTMLuong(nn.Module):
 
         encoder_outputs, hidden = self.encoder(src)
 
-        input_token = tgt[:, 0]     # <sos>
+        input_token = tgt[:, 0]     # <bos>
         logits = torch.zeros(batch, tgt_len, vocab, device=self.device)
 
         for t in range(1, tgt_len):
