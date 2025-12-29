@@ -159,7 +159,7 @@ def main():
             losses.append(loss.item())
             pbar.set_postfix(loss=f"{np.mean(losses):.4f}")
 
-        f1, p, r, _ = evaluate(model, dev_loader)
+        f1, p, r, _ = evaluate(model, dev_loader, vocab.id2tag)
         print(f"Dev — F1: {f1:.4f} | Precision: {p:.4f} | Recall: {r:.4f}")
 
         if f1 > best_f1:
@@ -170,7 +170,7 @@ def main():
     # ===== TEST =====
     print("\n=== TEST ===")
     model.load_state_dict(torch.load(save_path, map_location=device))
-    f1, p, r, report = evaluate(model, test_loader)
+    f1, p, r, report = evaluate(model, test_loader, vocab.id2tag)
     print(f"Test — F1: {f1:.4f} | Precision: {p:.4f} | Recall: {r:.4f}")
     print("\nClassification Report:\n")
     print(report)
