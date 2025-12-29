@@ -2,7 +2,7 @@
 import torch
 from torch.utils.data import DataLoader
 from torch import optim
-from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.metrics import f1_score, precision_score, recall_score, classification_report
 from tqdm import tqdm
 import numpy as np
 import os
@@ -22,31 +22,62 @@ torch.manual_seed(SYSTEM_CONFIG["seed"])
 
 
 # =====================
-# EVALUATION (token-level)
+# EVALUATION 
 # =====================
-def evaluate(model, loader):
+def flatten_preds_trues(preds_tensor, trues_tensor):
+    """
+    preds_tensor: [B, T] (tensor int)
+    trues_tensor: [B, T] (tensor int, padded positions = -100)
+    return two lists of ints (flattened) where trues != -100
+    """
+    preds = preds_tensor.cpu().tolist()
+    trues = trues_tensor.cpu().tolist()
+
+    flat_p = []
+    flat_t = []
+    for p_seq, t_seq in zip(preds, trues):
+        for p, t in zip(p_seq, t_seq):
+            if t != -100:
+                flat_p.append(p)
+                flat_t.append(t)
+    return flat_p, flat_t
+
+def evaluate(model, loader, id2tag):
     model.eval()
-    all_p, all_t = [], []
+    all_p = []
+    all_t = []
 
     with torch.no_grad():
         for batch in loader:
             x = batch["input_ids"].to(device)
-            y = batch["labels"].to(device)
+            y = batch["labels"].to(device)  # padded with -100
+            logits = model(x)  # [B, T, C]
+            preds = logits.argmax(dim=-1)  # [B, T]
 
-            logits = model(x)
-            preds = logits.argmax(-1)
+            p_flat, t_flat = flatten_preds_trues(preds, y)
+            all_p.extend(p_flat)
+            all_t.extend(t_flat)
 
-            for p_seq, t_seq in zip(preds, y):
-                for p, t in zip(p_seq, t_seq):
-                    if t != -100:
-                        all_p.append(p.item())
-                        all_t.append(t.item())
-
+    # metrics (token-level)
     f1 = f1_score(all_t, all_p, average="macro", zero_division=0)
-    p = precision_score(all_t, all_p, average="macro", zero_division=0)
-    r = recall_score(all_t, all_p, average="macro", zero_division=0)
+    prec = precision_score(all_t, all_p, average="macro", zero_division=0)
+    rec = recall_score(all_t, all_p, average="macro", zero_division=0)
 
-    return f1, p, r
+    # classification_report expects labels 0..n-1 and names in that order
+    # Lấy danh sách nhãn thực sự xuất hiện trong true labels
+    labels_in_data = sorted(list(set(all_t)))
+    target_names = [id2tag[i] for i in labels_in_data]
+
+    report = classification_report(
+        all_t,
+        all_p,
+        labels=labels_in_data,
+        target_names=target_names,
+        zero_division=0
+    )
+
+
+    return f1, prec, rec, report
 
 
 # =====================
@@ -128,8 +159,8 @@ def main():
             losses.append(loss.item())
             pbar.set_postfix(loss=f"{np.mean(losses):.4f}")
 
-        f1, p, r = evaluate(model, dev_loader)
-        print(f"Dev — F1: {f1:.4f} | P: {p:.4f} | R: {r:.4f}")
+        f1, p, r, _ = evaluate(model, dev_loader)
+        print(f"Dev — F1: {f1:.4f} | Precision: {p:.4f} | Recall: {r:.4f}")
 
         if f1 > best_f1:
             best_f1 = f1
@@ -139,9 +170,10 @@ def main():
     # ===== TEST =====
     print("\n=== TEST ===")
     model.load_state_dict(torch.load(save_path, map_location=device))
-    f1, p, r = evaluate(model, test_loader)
-    print(f"Test — F1: {f1:.4f} | P: {p:.4f} | R: {r:.4f}")
-
+    f1, p, r, report = evaluate(model, test_loader)
+    print(f"Test — F1: {f1:.4f} | Precision: {p:.4f} | Recall: {r:.4f}")
+    print("\nClassification Report:\n")
+    print(report)
 
 if __name__ == "__main__":
     main()
